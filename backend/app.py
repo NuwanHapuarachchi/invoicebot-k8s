@@ -2,14 +2,25 @@ from flask import Flask, request, jsonify
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
 
 app = Flask(__name__)
 
-DB_USER = os.getenv("DB_USER", "invoicebot")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "66889266")
-DB_HOST = os.getenv("DB_HOST", "localhost") 
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "invoicebotdb")
+
+def getenv_required(key: str) -> str:
+    value = os.getenv(key)
+    if value is None or value == "":
+        raise RuntimeError(f"Missing required environment variable: {key}")
+    return value
+
+DB_USER = getenv_required("DB_USER")
+DB_PASSWORD = getenv_required("DB_PASSWORD")
+DB_HOST = getenv_required("DB_HOST")
+DB_PORT = getenv_required("DB_PORT")
+DB_NAME = getenv_required("DB_NAME")
 
 # Connect to the PostgreSQL database
 def get_db_connection():
@@ -53,12 +64,30 @@ def add_invoice():
     amount = data.get("amount")
     customer_name = data.get("customer_name")
 
-    if not invoice_number or not amount or not customer_name:
-        return jsonify({"error": "Missing required fields"}), 400
+    # Validate required fields explicitly (don't treat 0 as missing)
+    if invoice_number is None or invoice_number == "" or customer_name is None or customer_name == "":
+        return jsonify({"error": "Missing required fields: invoice_number and customer_name are required"}), 400
+    if amount is None:
+        return jsonify({"error": "Missing required field: amount"}), 400
+
+    # Validate amount is a number
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return jsonify({"error": "Invalid amount; must be a number"}), 400
 
     try:
         conn = get_db_connection()
         cur = conn.cursor()
+
+        # Check uniqueness first to provide a clearer error and HTTP 409
+        cur.execute("SELECT * FROM invoices WHERE invoice_number = %s;", (invoice_number,))
+        existing = cur.fetchone()
+        if existing:
+            cur.close()
+            conn.close()
+            return jsonify({"error": "Invoice number must be unique"}), 409
+
         cur.execute(
             """
             INSERT INTO invoices (invoice_number, amount, customer_name)
@@ -72,9 +101,8 @@ def add_invoice():
         cur.close()
         conn.close()
         return jsonify(new_invoice), 201
-    except psycopg2.IntegrityError:
-        return jsonify({"error": "Invoice number must be unique"}), 400
     except Exception as e:
+        # Unexpected errors should return 500
         return jsonify({"error": str(e)}), 500
 
 # Delete an invoice
@@ -98,3 +126,4 @@ def delete_invoice(invoice_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+
