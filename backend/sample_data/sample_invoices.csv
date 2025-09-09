@@ -1,0 +1,6 @@
+invoice_number,amount,customer_name,uploaded_at
+INV-001,1500.75,John Doe,2025-09-01
+INV-002,299.99,Acme Corp,2025-09-03
+INV-003,4500,Global LLC,2025-08-28
+INV-004,0.00,Zero Sum,2025-09-05
+INV-005,123.45,Jane Smith,2025-09-08

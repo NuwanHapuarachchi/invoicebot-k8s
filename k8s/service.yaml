@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: invoicebot-service
+  namespace: default
+  labels:
+    app: invoicebot
+spec:
+  type: LoadBalancer
+  selector:
+    app: invoicebot
+  ports:
+  - port: 80
+    targetPort: 5000
+    protocol: TCP
+    name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: invoicebot-internal
+  namespace: default
+  labels:
+    app: invoicebot
+spec:
+  type: ClusterIP
+  selector:
+    app: invoicebot
+  ports:
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+    name: http

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CSV Upload & Preview</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main>
+    <h1>Upload CSV and Preview</h1>
+
+    <form id="upload-form">
+      <label for="file">Choose CSV file</label>
+      <input type="file" id="file" name="file" accept=".csv" required />
+
+      <label class="inline">
+        <input type="checkbox" id="hasHeader" name="has_header" checked />
+        First row is header
+      </label>
+
+      <button type="submit">Preview</button>
+      <button type="button" id="proceed-btn" disabled>Proceed & Import</button>
+    </form>
+
+    <section id="messages" aria-live="polite"></section>
+    <section id="preview"></section>
+    <section id="import-result"></section>
+  </main>
+
+  <script src="/static/upload.js"></script>
+</body>
+</html>

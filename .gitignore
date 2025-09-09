@@ -1,1 +1,41 @@
+# Environment files with secrets
 .env
+.env.local
+.env.production
+.env.staging
+
+# Kubernetes secrets (NEVER commit actual secrets!)
+k8s/secrets.yaml
+# Keep template file for reference
+!k8s/secrets.template.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files
+test_*.py
+*_test.py
+backend/test.py
+test.py
+
+# Temporary files
+*.tmp
+temp_*.txt
+
+# AWS credentials
+.aws/
+credentials
